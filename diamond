@@ -9,7 +9,6 @@ context = {
     k: v
     for k, v in config["main"].items()
 }
-print(context)
 output_dir = "./dist"
 loaded_files = {
     # filename: content bytes
