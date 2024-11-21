@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+import string
+import os
+import shutil
+import configparser
+config = configparser.ConfigParser()
+config.read("./config.ini")
+context = {
+    "site_name": config["main"]["SiteName"],
+}
+
+output_dir = "./dist"
+loaded_files = {
+    # filename: content bytes
+}
+
+def load_file_raw(path):
+    if path in loaded_files:
+        return loaded_files[path]
+    with open(path, "rb") as f:
+        loaded_files[path] = f.read()
+    return loaded_files[path]
+def load_file(path):
+    return load_file_raw(path).decode(encoding="utf-8")
+
+def ensure_path(*args):
+    full_path = os.path.join(*args)
+    os.makedirs(full_path, exist_ok=True)
+def output_file_raw(relpath, content, base_dir=output_dir):
+    ensure_path(base_dir, os.path.dirname(relpath))
+    if isinstance(content, str):
+        content = content.encode(encoding="utf-8")
+    with open(os.path.join(base_dir, relpath), "wb") as f:
+        f.write(content)
+def output_file(relpath, content, base_dir=output_dir):
+    ensure_path(base_dir, os.path.dirname(relpath))
+    try:
+        content = content.decode()
+    except AttributeError:
+        pass
+    with open(os.path.join(base_dir, relpath), "w") as f:
+        f.write(content)
+
+rmdir_r = shutil.rmtree
+footer = load_file("templates/footer.html")
+header = load_file("templates/header.html")
+
+def clean():
+    rmdir_r(output_dir)
+def generate_homepage():
+    home = load_file("templates/home.html")
+    content = header + home + footer
+    output_file(
+        "index.html",
+        string.Template(content).safe_substitute(**context)
+    )
+clean()
+generate_homepage()
