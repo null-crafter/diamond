@@ -3,13 +3,15 @@ import string
 import os
 import shutil
 import configparser
+import re
 config = configparser.ConfigParser()
 config.read("./config.ini")
 context = {
     k: v
     for k, v in config["main"].items()
 }
-output_dir = "./dist"
+output_dir = "./public"
+static_dir = "./static"
 loaded_files = {
     # filename: content bytes
 }
@@ -48,12 +50,19 @@ header = load_file("templates/header.html")
 def clean():
     if os.path.exists(output_dir):
         rmdir_r(output_dir)
+
+def make_html_paragraphs(text):
+    return "<p>" + re.sub(r"\n{2,}", "</p><p>", text) + "</p>"
 def generate_homepage():
-    home = load_file("templates/home.html")
+    home = make_html_paragraphs(load_file("templates/home.html"))
     content = header + home + footer
     output_file(
         "index.html",
         string.Template(content).safe_substitute(**context)
     )
+
+def copy_static():
+    shutil.copytree(static_dir, output_dir, dirs_exist_ok=True)
 clean()
 generate_homepage()
+copy_static()
