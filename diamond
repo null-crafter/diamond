@@ -53,16 +53,22 @@ def clean():
 
 def make_html_paragraphs(text):
     return "<p>" + re.sub(r"\n{2,}", "</p><p>", text) + "</p>"
-def generate_homepage():
+def generate_pages():
     home = make_html_paragraphs(load_file("templates/home.html"))
     content = header + home + footer
     output_file(
         "index.html",
         string.Template(content).safe_substitute(**context)
     )
+    about = make_html_paragraphs(load_file("templates/about.html"))
+    content = header + about + footer
+    output_file(
+        "about/index.html",
+        string.Template(content).safe_substitute(**context)
+    )
 
 def copy_static():
     shutil.copytree(static_dir, output_dir, dirs_exist_ok=True)
 clean()
-generate_homepage()
+generate_pages()
 copy_static()
